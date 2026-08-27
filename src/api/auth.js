@@ -1,7 +1,14 @@
 import { LOGIN_URL } from '@/constants/auth'
+import {
+  printLoginNetworkError,
+  printLoginRequest,
+  printLoginResponse
+} from '@/utils/request-debug'
 
 export async function login (credentials) {
   let response
+
+  printLoginRequest(LOGIN_URL, credentials)
 
   try {
     response = await fetch(LOGIN_URL, {
@@ -12,8 +19,9 @@ export async function login (credentials) {
       body: JSON.stringify(credentials)
     })
   } catch (error) {
+    printLoginNetworkError(error)
     throw new Error(
-      `登录请求被浏览器拦截，请确认后端 CORS 已允许当前页面来源：${window.location.origin}`
+      '无法连接登录服务，请确认后端服务和前端接口代理配置正常'
     )
   }
 
@@ -22,8 +30,11 @@ export async function login (credentials) {
   try {
     result = await response.json()
   } catch (error) {
+    printLoginNetworkError(error)
     throw new Error(`登录服务返回了无效数据（HTTP ${response.status}）`)
   }
+
+  printLoginResponse(response, result)
 
   const user = result && result.data
   const accessToken = user && user.accessToken
