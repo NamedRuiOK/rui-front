@@ -103,18 +103,28 @@
                   {{ selectedTaskTab === 'all' ? '今天还没有安排任务' : '当前筛选下暂无任务' }}
                 </div>
                 <div v-else class="task-list">
-                  <div v-for="task in filteredTasks" :key="task.id" class="task-row" :class="{ 'is-done': task.state === 'done' }">
+                  <p v-if="taskActionError" class="task-action-error" role="alert">{{ taskActionError }}</p>
+                  <label
+                    v-for="task in filteredTasks"
+                    :key="task.id"
+                    class="task-row"
+                    :class="{
+                      'is-done': task.state === 'done',
+                      'is-completing': completingTaskIds.includes(task.id)
+                    }"
+                  >
                     <input
                       :checked="task.state === 'done'"
                       type="checkbox"
                       :aria-label="`标记任务：${task.title}`"
-                      disabled
+                      :disabled="task.state === 'done' || completingTaskIds.includes(task.id)"
+                      @change="completeTask(task, $event)"
                     >
                     <span class="task-check" aria-hidden="true">{{ task.state === 'done' ? '✓' : '' }}</span>
                     <span class="task-title">{{ task.title }}</span>
                     <span class="task-tag" :class="`tone-${task.tone}`">{{ task.tag }}</span>
                     <time class="task-time">{{ task.time }}</time>
-                  </div>
+                  </label>
                 </div>
               </section>
 
@@ -231,7 +241,7 @@
 </template>
 
 <script>
-import { fetchDayTaskList } from '@/api/day-task'
+import { completeDayTask, fetchDayTaskList } from '@/api/day-task'
 import CalendarPanel from '@/components/dashboard/CalendarPanel.vue'
 import { dashboardData } from '@/data/dashboard'
 
@@ -255,7 +265,9 @@ export default {
       selectedTaskTab: 'all',
       tasks: [],
       isLoadingTasks: true,
-      taskError: ''
+      taskError: '',
+      taskActionError: '',
+      completingTaskIds: []
     }
   },
   computed: {
@@ -297,6 +309,7 @@ export default {
     async loadDayTasks () {
       this.isLoadingTasks = true
       this.taskError = ''
+      this.taskActionError = ''
 
       try {
         const dayTasks = await fetchDayTaskList()
@@ -306,6 +319,27 @@ export default {
         this.taskError = error.message || '每日任务查询失败，请稍后重试'
       } finally {
         this.isLoadingTasks = false
+      }
+    },
+    async completeTask (task, event) {
+      if (task.state === 'done' || !event.target.checked) {
+        event.target.checked = task.state === 'done'
+        return
+      }
+
+      this.taskActionError = ''
+      this.completingTaskIds = [...this.completingTaskIds, task.id]
+
+      try {
+        await completeDayTask(task.id)
+        task.status = 2
+        task.state = 'done'
+        task.completedTime = new Date().toISOString()
+      } catch (error) {
+        event.target.checked = false
+        this.taskActionError = error.message || '任务完成失败，请稍后重试'
+      } finally {
+        this.completingTaskIds = this.completingTaskIds.filter(id => id !== task.id)
       }
     },
     mapDayTask (task) {
@@ -788,6 +822,12 @@ export default {
   margin: 0 0 8px;
 }
 
+.task-action-error {
+  margin: 10px 0 0;
+  color: #ff7280;
+  font-size: 10px;
+}
+
 .task-row {
   display: grid;
   grid-template-columns: 17px minmax(0, 1fr) auto 84px;
@@ -797,6 +837,11 @@ export default {
   border-top: 1px solid rgba(117, 149, 178, 0.1);
   color: #c5d4e2;
   cursor: pointer;
+}
+
+.task-row.is-completing {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .task-row input {
