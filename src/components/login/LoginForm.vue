@@ -1,5 +1,5 @@
 <template>
-  <form v-if="!loginSucceeded" class="login-form" @submit.prevent="submitLogin">
+  <form class="login-form" @submit.prevent="submitLogin">
     <div class="field-group">
       <label for="username">用户名</label>
       <input
@@ -38,14 +38,6 @@
     </button>
   </form>
 
-  <div v-else class="success-state" role="status">
-    <div class="success-icon" aria-hidden="true">✓</div>
-    <h2>登录成功</h2>
-    <p>欢迎回来，{{ currentUser.username || '用户' }}</p>
-    <button class="secondary-button" type="button" @click="resetLogin">
-      切换账户
-    </button>
-  </div>
 </template>
 
 <script>
@@ -54,6 +46,7 @@ import { saveAccessToken } from '@/utils/auth-storage'
 
 export default {
   name: 'LoginForm',
+  emits: ['login-success'],
   data () {
     return {
       form: {
@@ -62,8 +55,6 @@ export default {
       },
       isSubmitting: false,
       errorMessage: '',
-      loginSucceeded: false,
-      currentUser: {}
     }
   },
   methods: {
@@ -78,18 +69,12 @@ export default {
         })
 
         saveAccessToken(user.accessToken)
-        this.currentUser = user
-        this.loginSucceeded = true
+        this.$emit('login-success', user)
       } catch (error) {
         this.errorMessage = error.message || '网络异常，请稍后重试'
       } finally {
         this.isSubmitting = false
       }
-    },
-    resetLogin () {
-      this.form.password = ''
-      this.errorMessage = ''
-      this.loginSucceeded = false
     }
   }
 }

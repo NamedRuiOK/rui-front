@@ -9,7 +9,7 @@
         <p>登录你的账户，继续探索工作台</p>
       </div>
 
-      <LoginForm />
+      <LoginForm @login-success="$emit('login-success', $event)" />
 
       <p class="login-footer">© 2026 RUI PLATFORM</p>
     </section>
@@ -21,6 +21,7 @@ import LoginForm from '@/components/login/LoginForm.vue'
 
 export default {
   name: 'LoginView',
+  emits: ['login-success'],
   components: {
     LoginForm
   }
