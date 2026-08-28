@@ -77,27 +77,44 @@
                   <div>
                     <h2>今日任务</h2>
                     <div class="panel-tabs">
-                      <button class="panel-tab is-active" type="button">全部 ({{ tasks.length }})</button>
-                      <button class="panel-tab" type="button">进行中 ({{ pendingTasks.length }})</button>
-                      <button class="panel-tab" type="button">已完成 ({{ completedTasks.length }})</button>
+                      <button
+                        v-for="tab in taskTabs"
+                        :key="tab.key"
+                        class="panel-tab"
+                        :class="{ 'is-active': selectedTaskTab === tab.key }"
+                        type="button"
+                        @click="selectedTaskTab = tab.key"
+                      >
+                        {{ tab.label }} ({{ tab.count }})
+                      </button>
                     </div>
                   </div>
                   <button class="text-button" type="button">查看全部 <span aria-hidden="true">›</span></button>
                 </div>
 
-                <div class="task-list">
-                  <label v-for="(task, index) in tasks" :key="task.title" class="task-row" :class="{ 'is-done': task.state === 'done' }">
+                <div v-if="isLoadingTasks" class="task-feedback">正在加载每日任务...</div>
+                <div v-else-if="taskError" class="task-feedback task-feedback-error" role="alert">
+                  <p>{{ taskError }}</p>
+                  <button class="text-button" type="button" @click="loadDayTasks">
+                    重新加载 <span aria-hidden="true">↻</span>
+                  </button>
+                </div>
+                <div v-else-if="filteredTasks.length === 0" class="task-feedback">
+                  {{ selectedTaskTab === 'all' ? '今天还没有安排任务' : '当前筛选下暂无任务' }}
+                </div>
+                <div v-else class="task-list">
+                  <div v-for="task in filteredTasks" :key="task.id" class="task-row" :class="{ 'is-done': task.state === 'done' }">
                     <input
                       :checked="task.state === 'done'"
                       type="checkbox"
                       :aria-label="`标记任务：${task.title}`"
-                      @change="toggleTask(index)"
+                      disabled
                     >
                     <span class="task-check" aria-hidden="true">{{ task.state === 'done' ? '✓' : '' }}</span>
                     <span class="task-title">{{ task.title }}</span>
                     <span class="task-tag" :class="`tone-${task.tone}`">{{ task.tag }}</span>
                     <time class="task-time">{{ task.time }}</time>
-                  </label>
+                  </div>
                 </div>
               </section>
 
@@ -205,24 +222,7 @@
               </div>
             </section>
 
-            <section class="dashboard-panel calendar-panel">
-              <div class="panel-heading">
-                <h2>日历</h2>
-                <button class="text-button" type="button">查看详情 <span aria-hidden="true">›</span></button>
-              </div>
-              <p class="calendar-month">{{ dashboardData.calendar.month }}</p>
-              <div class="calendar-grid">
-                <span v-for="weekday in dashboardData.calendar.weekdays" :key="weekday" class="calendar-weekday">{{ weekday }}</span>
-                <span
-                  v-for="day in calendarDays"
-                  :key="`${day.month}-${day.date}`"
-                  class="calendar-day"
-                  :class="{ 'is-muted': day.isMuted, 'is-selected': day.date === 27 && !day.isMuted }"
-                >
-                  {{ day.date }}
-                </span>
-              </div>
-            </section>
+            <CalendarPanel />
           </aside>
         </div>
       </main>
@@ -231,10 +231,15 @@
 </template>
 
 <script>
+import { fetchDayTaskList } from '@/api/day-task'
+import CalendarPanel from '@/components/dashboard/CalendarPanel.vue'
 import { dashboardData } from '@/data/dashboard'
 
 export default {
   name: 'DashboardView',
+  components: {
+    CalendarPanel
+  },
   emits: ['logout'],
   props: {
     user: {
@@ -247,7 +252,10 @@ export default {
       dashboardData,
       selectedNavigation: 0,
       searchText: '',
-      tasks: dashboardData.tasks.map(task => ({ ...task }))
+      selectedTaskTab: 'all',
+      tasks: [],
+      isLoadingTasks: true,
+      taskError: ''
     }
   },
   computed: {
@@ -258,37 +266,110 @@ export default {
       return this.userName.slice(0, 1).toUpperCase()
     },
     completedTasks () {
-      return this.tasks.filter(task => task.state === 'done')
+      return this.tasks.filter(task => task.status === 2)
     },
     pendingTasks () {
-      return this.tasks.filter(task => task.state !== 'done')
+      return this.tasks.filter(task => task.status === 1)
     },
-    calendarDays () {
-      const days = []
-      const firstDay = new Date(2025, 7, 1)
-      const leadingDays = (firstDay.getDay() + 6) % 7
-
-      for (let index = leadingDays; index > 0; index -= 1) {
-        const date = new Date(2025, 7, 1 - index)
-        days.push({ date: date.getDate(), month: date.getMonth(), isMuted: true })
+    taskTabs () {
+      return [
+        { key: 'all', label: '全部', count: this.tasks.length },
+        { key: 'in-progress', label: '进行中', count: this.pendingTasks.length },
+        { key: 'completed', label: '已完成', count: this.completedTasks.length }
+      ]
+    },
+    filteredTasks () {
+      if (this.selectedTaskTab === 'in-progress') {
+        return this.tasks.filter(task => task.status === 1)
       }
 
-      for (let date = 1; date <= 31; date += 1) {
-        days.push({ date, month: 7, isMuted: false })
+      if (this.selectedTaskTab === 'completed') {
+        return this.tasks.filter(task => task.status === 2)
       }
 
-      while (days.length % 7 !== 0) {
-        const date = new Date(2025, 7, 31 + (days.length - 34))
-        days.push({ date: date.getDate(), month: date.getMonth(), isMuted: true })
-      }
-
-      return days
+      return this.tasks
     }
   },
+  mounted () {
+    this.loadDayTasks()
+  },
   methods: {
-    toggleTask (index) {
-      const task = this.tasks[index]
-      task.state = task.state === 'done' ? 'pending' : 'done'
+    async loadDayTasks () {
+      this.isLoadingTasks = true
+      this.taskError = ''
+
+      try {
+        const dayTasks = await fetchDayTaskList()
+        this.tasks = dayTasks.map(task => this.mapDayTask(task))
+      } catch (error) {
+        this.tasks = []
+        this.taskError = error.message || '每日任务查询失败，请稍后重试'
+      } finally {
+        this.isLoadingTasks = false
+      }
+    },
+    mapDayTask (task) {
+      const status = Number(task.status)
+
+      return {
+        id: task.id,
+        title: task.name || '未命名任务',
+        tag: this.getPriorityLabel(task.priority),
+        tone: this.getPriorityTone(task.priority),
+        time: this.formatTaskTime(task.endTime),
+        state: status === 2 ? 'done' : 'pending',
+        status,
+        description: task.description || '',
+        startTime: task.startTime,
+        endTime: task.endTime,
+        completedTime: task.completedTime,
+        labelIds: task.labelIds
+      }
+    },
+    getPriorityLabel (priority) {
+      const priorityLabels = {
+        1: '最高优先级',
+        2: '高优先级',
+        3: '普通',
+        4: '低优先级',
+        5: '最低优先级'
+      }
+
+      return priorityLabels[Number(priority)] || '普通'
+    },
+    getPriorityTone (priority) {
+      const priorityTones = {
+        1: 'red',
+        2: 'orange',
+        3: 'blue',
+        4: 'green',
+        5: 'slate'
+      }
+
+      return priorityTones[Number(priority)] || 'blue'
+    },
+    formatTaskTime (value) {
+      if (!value) {
+        return '未设置截止时间'
+      }
+
+      const taskDate = new Date(value)
+
+      if (Number.isNaN(taskDate.getTime())) {
+        return '时间格式错误'
+      }
+
+      const today = new Date()
+      const dateText = taskDate.toLocaleDateString('zh-CN') === today.toLocaleDateString('zh-CN')
+        ? '今天'
+        : taskDate.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
+      const timeText = taskDate.toLocaleTimeString('zh-CN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+
+      return `${dateText} ${timeText}`
     },
     selectSettings () {
       this.selectedNavigation = this.dashboardData.navigation.length
@@ -636,8 +717,7 @@ export default {
 .personal-panel,
 .progress-panel,
 .list-panel,
-.shortcut-panel,
-.calendar-panel {
+.shortcut-panel {
   padding: 17px 15px 13px;
 }
 
@@ -690,6 +770,22 @@ export default {
 
 .task-list {
   margin-top: 10px;
+}
+
+.task-feedback {
+  margin-top: 14px;
+  padding: 20px 8px 16px;
+  color: #8197aa;
+  font-size: 11px;
+  text-align: center;
+}
+
+.task-feedback-error {
+  color: #ff7280;
+}
+
+.task-feedback p {
+  margin: 0 0 8px;
 }
 
 .task-row {
@@ -1041,52 +1137,6 @@ export default {
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
 }
 
-.calendar-panel {
-  min-height: 304px;
-}
-
-.calendar-month {
-  margin: 12px 0 9px;
-  color: #d7e5f1;
-  font-size: 10px;
-}
-
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  row-gap: 6px;
-  border-top: 1px solid rgba(117, 149, 178, 0.12);
-  padding-top: 8px;
-  text-align: center;
-}
-
-.calendar-weekday {
-  color: #7d95ab;
-  font-size: 9px;
-}
-
-.calendar-day {
-  display: grid;
-  width: 25px;
-  height: 25px;
-  margin: auto;
-  place-items: center;
-  border-radius: 50%;
-  color: #c4d3e0;
-  font-size: 9px;
-}
-
-.calendar-day.is-muted {
-  color: #52687d;
-}
-
-.calendar-day.is-selected {
-  background: #2778dd;
-  color: #ffffff;
-  font-weight: 700;
-  box-shadow: 0 4px 10px rgba(39, 120, 221, 0.3);
-}
-
 .tone-blue {
   background-color: #1f78e2;
   color: #ffffff;
@@ -1184,9 +1234,6 @@ export default {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .calendar-panel {
-    min-height: 164px;
-  }
 }
 
 @media (max-width: 780px) {

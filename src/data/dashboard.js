@@ -67,9 +67,5 @@ export const dashboardData = {
     { text: '你创建了新的学习笔记：Spring Boot 自动配置原理', time: '4小时前', tone: 'purple' },
     { text: '你更新了项目：任务管理系统', time: '昨天 20:15', tone: 'slate' },
     { text: '你登录了系统', time: '昨天 08:32', tone: 'cyan' }
-  ],
-  calendar: {
-    month: '2025年8月',
-    weekdays: ['一', '二', '三', '四', '五', '六', '日']
-  }
+  ]
 }
