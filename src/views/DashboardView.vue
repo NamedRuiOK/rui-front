@@ -728,7 +728,10 @@ export default {
 }
 
 .task-list {
+  max-height: 278px;
   margin-top: 10px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .task-feedback {

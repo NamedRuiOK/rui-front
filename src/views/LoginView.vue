@@ -9,21 +9,92 @@
         <p>登录你的账户，继续探索工作台</p>
       </div>
 
-      <LoginForm @login-success="$emit('login-success', $event)" />
+      <LoginForm
+        :registered-username="registeredUsername"
+        @login-success="$emit('login-success', $event)"
+      />
+      <p v-if="registrationMessage" class="register-success" role="status">
+        {{ registrationMessage }}
+      </p>
+
+      <button class="register-button" type="button" @click="openRegister">
+        <span>还没有账户？</span>
+        注册账号
+      </button>
 
       <p class="login-footer">© 2026 RUI PLATFORM</p>
     </section>
+
+    <div
+      v-if="isRegisterOpen"
+      class="register-backdrop"
+      @click.self="closeRegister"
+      @keydown.esc="closeRegister"
+    >
+      <section class="register-dialog" role="dialog" aria-modal="true" aria-labelledby="register-title">
+        <header class="register-dialog-header">
+          <div>
+            <p class="eyebrow">RUI PLATFORM</p>
+            <h2 id="register-title">创建账户</h2>
+          </div>
+          <button
+            class="dialog-close"
+            type="button"
+            aria-label="关闭注册窗口"
+            title="关闭"
+            :disabled="isRegistering"
+            @click="closeRegister"
+          >
+            &times;
+          </button>
+        </header>
+
+        <RegisterForm
+          @register-start="isRegistering = true"
+          @register-end="isRegistering = false"
+          @register-success="handleRegisterSuccess"
+        />
+      </section>
+    </div>
   </main>
 </template>
 
 <script>
 import LoginForm from '@/components/login/LoginForm.vue'
+import RegisterForm from '@/components/login/RegisterForm.vue'
 
 export default {
   name: 'LoginView',
   emits: ['login-success'],
   components: {
-    LoginForm
+    LoginForm,
+    RegisterForm
+  },
+  data () {
+    return {
+      isRegisterOpen: false,
+      isRegistering: false,
+      registeredUsername: '',
+      registrationMessage: ''
+    }
+  },
+  methods: {
+    openRegister () {
+      this.isRegisterOpen = true
+      this.isRegistering = false
+      this.registrationMessage = ''
+    },
+    closeRegister () {
+      if (!this.isRegistering) {
+        this.isRegisterOpen = false
+      }
+    },
+    handleRegisterSuccess (username) {
+      this.isRegistering = false
+      this.isRegisterOpen = false
+      this.registeredUsername = username
+      this.registrationMessage = '注册成功，请使用新账户登录'
+    }
   }
 }
 </script>
@@ -120,6 +191,101 @@ export default {
   letter-spacing: 1.1px;
 }
 
+.register-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 4px;
+  background: transparent;
+  color: #31556e;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.register-button span {
+  color: #748390;
+}
+
+.register-success {
+  margin: 14px 0 -4px;
+  color: #2f8960;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.register-button:hover {
+  color: #1d3b55;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.register-backdrop {
+  position: fixed;
+  z-index: 5;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(16, 33, 50, 0.54);
+}
+
+.register-dialog {
+  width: min(100%, 620px);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 27px 30px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 24px 80px rgba(16, 33, 50, 0.3);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.register-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 23px;
+}
+
+.register-dialog-header .eyebrow {
+  margin: 0 0 7px;
+  color: #6f8aa0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.register-dialog-header h2 {
+  margin: 0;
+  color: #1e3346;
+  font-size: 24px;
+  line-height: 1.3;
+}
+
+.dialog-close {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  background: transparent;
+  color: #748390;
+  cursor: pointer;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.dialog-close:hover {
+  color: #1e3346;
+}
+
+.dialog-close:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 @media (max-width: 480px) {
   .login-page {
     padding: 20px 14px;
@@ -132,6 +298,10 @@ export default {
 
   .login-heading h1 {
     font-size: 27px;
+  }
+
+  .register-dialog {
+    padding: 24px 20px;
   }
 }
 </style>

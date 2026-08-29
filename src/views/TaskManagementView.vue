@@ -199,6 +199,25 @@
         </form>
       </section>
     </div>
+
+    <div v-if="deleteTaskTarget" class="dialog-backdrop" @click.self="closeDeleteDialog">
+      <section class="task-dialog confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-dialog-title">
+        <header class="dialog-header">
+          <h2 id="delete-dialog-title">确认删除任务</h2>
+          <button class="dialog-close" type="button" aria-label="关闭" title="关闭" :disabled="isDeleting" @click="closeDeleteDialog">&times;</button>
+        </header>
+        <div class="confirm-dialog-content">
+          <p class="confirm-dialog-message">确认删除任务“{{ deleteTaskTarget.title }}”吗？删除后无法恢复。</p>
+          <p v-if="deleteError" class="form-error" role="alert">{{ deleteError }}</p>
+          <footer class="dialog-actions">
+            <button class="cancel-button" type="button" :disabled="isDeleting" @click="closeDeleteDialog">取消</button>
+            <button class="delete-confirm-button" type="button" :disabled="isDeleting" @click="confirmDeleteTask">
+              {{ isDeleting ? '删除中...' : '确认删除' }}
+            </button>
+          </footer>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -250,7 +269,10 @@ export default {
       editingTaskId: null,
       taskForm: defaultTaskForm(),
       isSaving: false,
-      formError: ''
+      formError: '',
+      deleteTaskTarget: null,
+      isDeleting: false,
+      deleteError: ''
     }
   },
   computed: {
@@ -514,17 +536,32 @@ export default {
         this.isSaving = false
       }
     },
-    async removeTask (task) {
-      if (!window.confirm(`确认删除任务“${task.title}”吗？`)) return
+    removeTask (task) {
+      this.deleteTaskTarget = task
+      this.deleteError = ''
+    },
+    closeDeleteDialog () {
+      if (this.isDeleting) return
+      this.deleteTaskTarget = null
+      this.deleteError = ''
+    },
+    async confirmDeleteTask () {
+      if (!this.deleteTaskTarget || this.isDeleting) return
+
+      this.isDeleting = true
+      this.deleteError = ''
 
       try {
-        await deleteTask(task.id)
+        await deleteTask(this.deleteTaskTarget.id)
+        this.deleteTaskTarget = null
         if (this.tasks.length === 1 && this.page.pageNum > 1) {
           this.page.pageNum -= 1
         }
         await this.loadTasks()
       } catch (error) {
-        this.loadError = error.message || '删除任务失败，请稍后重试'
+        this.deleteError = error.message || '删除任务失败，请稍后重试'
+      } finally {
+        this.isDeleting = false
       }
     }
   }
@@ -927,6 +964,7 @@ textarea::placeholder { color: #69829a; }
 .dialog-header { justify-content: space-between; min-height: 47px; padding: 0 17px; border-bottom: 1px solid rgba(117, 149, 178, 0.12); }
 .dialog-header h2 { margin: 0; color: #edf6ff; font-size: 17px; }
 .dialog-close { padding: 0; background: transparent; color: #8ca7bc; cursor: pointer; font-size: 22px; line-height: 1; }
+.dialog-close:disabled { cursor: not-allowed; opacity: 0.55; }
 .dialog-close:hover { color: #ffffff; }
 .task-form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 17px; }
 .form-field { display: grid; gap: 6px; }
@@ -939,6 +977,11 @@ textarea::placeholder { color: #69829a; }
 .form-field input[type="datetime-local"] { color-scheme: dark; }
 .form-error { grid-column: 1 / -1; margin: -3px 0 0; color: #ff7885; font-size: 12px; }
 .dialog-actions { grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 4px; }
+.confirm-dialog { width: min(100%, 430px); }
+.confirm-dialog-content { padding: 17px; }
+.confirm-dialog-message { margin: 0; color: #c8d8e5; font-size: 14px; line-height: 1.7; }
+.delete-confirm-button { min-width: 82px; border: 1px solid #c34e5d; background: #b94352; color: #ffffff; }
+.delete-confirm-button:disabled { cursor: not-allowed; opacity: 0.55; }
 .submit-button { min-width: 62px; border: 1px solid #1e74df; background: #1d70db; color: #ffffff; }
 .submit-button:disabled,
 .cancel-button:disabled { cursor: not-allowed; opacity: 0.55; }

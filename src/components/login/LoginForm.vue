@@ -3,6 +3,7 @@
     <div class="field-group">
       <label for="username">用户名</label>
       <input
+        ref="usernameInput"
         id="username"
         v-model.trim="form.username"
         type="text"
@@ -47,6 +48,12 @@ import { saveAccessToken } from '@/utils/auth-storage'
 export default {
   name: 'LoginForm',
   emits: ['login-success'],
+  props: {
+    registeredUsername: {
+      type: String,
+      default: ''
+    }
+  },
   data () {
     return {
       form: {
@@ -55,6 +62,16 @@ export default {
       },
       isSubmitting: false,
       errorMessage: '',
+    }
+  },
+  watch: {
+    registeredUsername (username) {
+      if (username) {
+        this.form.username = username
+        this.form.password = ''
+        this.errorMessage = ''
+        this.$nextTick(() => this.$refs.usernameInput && this.$refs.usernameInput.focus())
+      }
     }
   },
   methods: {

@@ -1,4 +1,4 @@
-import { LOGIN_URL } from '@/constants/auth'
+import { LOGIN_URL, REGISTER_URL } from '@/constants/auth'
 import {
   printLoginNetworkError,
   printLoginRequest,
@@ -44,4 +44,36 @@ export async function login (credentials) {
   }
 
   return user
+}
+
+export async function register (userData) {
+  let response
+
+  try {
+    response = await fetch(REGISTER_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    })
+  } catch (error) {
+    throw new Error(
+      '无法连接注册服务，请确认后端服务和前端接口代理配置正常'
+    )
+  }
+
+  let result
+
+  try {
+    result = await response.json()
+  } catch (error) {
+    throw new Error(`注册服务返回了无效数据（HTTP ${response.status}）`)
+  }
+
+  if (!response.ok || !result || result.code !== 200) {
+    throw new Error((result && result.message) || '注册失败，请检查注册信息')
+  }
+
+  return result.data
 }

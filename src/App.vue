@@ -23,7 +23,25 @@ import TaskManagementView from './views/TaskManagementView.vue'
 import ModuleView from './views/ModuleView.vue'
 import WorkspaceShell from '@/components/workspace/WorkspaceShell.vue'
 import { dashboardData } from '@/data/dashboard'
-import { removeAccessToken } from '@/utils/auth-storage'
+import {
+  getAccessToken,
+  getCurrentUser,
+  getCurrentView,
+  removeLoginSession,
+  saveCurrentUser,
+  saveCurrentView
+} from '@/utils/auth-storage'
+
+const DEFAULT_VIEW = 'dashboard'
+const AVAILABLE_VIEWS = new Set([
+  ...dashboardData.navigation.map(item => item.key),
+  'settings'
+])
+
+function getRestoredView () {
+  const savedView = getCurrentView()
+  return AVAILABLE_VIEWS.has(savedView) ? savedView : DEFAULT_VIEW
+}
 
 export default {
   name: 'App',
@@ -35,30 +53,33 @@ export default {
     WorkspaceShell
   },
   data () {
+    const isLoggedIn = Boolean(getAccessToken())
+
     return {
-      isLoggedIn: false,
-      currentUser: {},
-      currentView: 'dashboard'
+      isLoggedIn,
+      currentUser: isLoggedIn ? getCurrentUser() : {},
+      currentView: isLoggedIn ? getRestoredView() : DEFAULT_VIEW
     }
   },
   methods: {
     showWorkspace (user) {
       this.currentUser = user || {}
       this.isLoggedIn = true
-      this.currentView = 'dashboard'
+      this.currentView = DEFAULT_VIEW
+      saveCurrentUser(this.currentUser)
+      saveCurrentView(this.currentView)
     },
     navigate (view) {
-      const moduleKeys = dashboardData.navigation.map(item => item.key)
-
-      if (moduleKeys.includes(view) || view === 'settings') {
+      if (AVAILABLE_VIEWS.has(view)) {
         this.currentView = view
+        saveCurrentView(view)
       }
     },
     logout () {
-      removeAccessToken()
+      removeLoginSession()
       this.currentUser = {}
       this.isLoggedIn = false
-      this.currentView = 'dashboard'
+      this.currentView = DEFAULT_VIEW
     }
   }
 }
