@@ -1,13 +1,13 @@
 export const dashboardData = {
   navigation: [
-    { icon: '⌂', label: '工作台', active: true },
-    { icon: '✓', label: '任务管理' },
-    { icon: '▮', label: '知识库' },
-    { icon: '◆', label: '学习中心' },
-    { icon: '□', label: '项目管理' },
-    { icon: '▤', label: '面试题库' },
-    { icon: '✦', label: 'AI 出题' },
-    { icon: '▣', label: '系统监控' }
+    { key: 'dashboard', icon: '⌂', label: '工作台' },
+    { key: 'task-management', icon: '✓', label: '任务管理' },
+    { key: 'knowledge-base', icon: '▮', label: '知识库' },
+    { key: 'learning-center', icon: '◆', label: '学习中心' },
+    { key: 'project-management', icon: '□', label: '项目管理' },
+    { key: 'interview-bank', icon: '▤', label: '面试题库' },
+    { key: 'ai-question', icon: '✦', label: 'AI 出题' },
+    { key: 'system-monitor', icon: '▣', label: '系统监控' }
   ],
   summary: {
     title: '每一次坚持，都是更好的自己',

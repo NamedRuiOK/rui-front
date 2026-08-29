@@ -1,60 +1,5 @@
 <template>
-  <div class="dashboard-page">
-    <aside class="dashboard-sidebar" aria-label="主导航">
-      <div class="sidebar-brand">
-        <span class="sidebar-brand-mark" aria-hidden="true">R</span>
-        <span>个人开发者工作台</span>
-      </div>
-
-      <nav class="sidebar-nav">
-        <button
-          v-for="(item, index) in dashboardData.navigation"
-          :key="item.label"
-          class="sidebar-nav-item"
-          :class="{ 'is-active': selectedNavigation === index }"
-          type="button"
-          @click="selectedNavigation = index"
-        >
-          <span class="sidebar-nav-icon" aria-hidden="true">{{ item.icon }}</span>
-          <span>{{ item.label }}</span>
-        </button>
-      </nav>
-
-      <button class="sidebar-settings" type="button" @click="selectSettings">
-        <span class="sidebar-nav-icon" aria-hidden="true">⚙</span>
-        <span>设置</span>
-      </button>
-    </aside>
-
-    <section class="dashboard-workspace">
-      <header class="dashboard-topbar">
-        <div class="topbar-user">
-          <div class="avatar avatar-large" aria-hidden="true">{{ userInitial }}</div>
-          <div>
-            <p class="topbar-greeting">你好，{{ userName }}</p>
-            <p class="topbar-caption">专注技术，持续成长</p>
-          </div>
-        </div>
-
-        <div class="topbar-actions">
-          <label class="dashboard-search">
-            <span class="sr-only">搜索功能、文档或内容</span>
-            <input v-model.trim="searchText" type="search" placeholder="搜索功能、文档、内容..." >
-            <span aria-hidden="true">⌕</span>
-          </label>
-          <button class="icon-button notification-button" type="button" title="通知" aria-label="通知">
-            <span aria-hidden="true">♧</span>
-            <span class="notification-dot">3</span>
-          </button>
-          <div class="topbar-avatar avatar" aria-hidden="true">{{ userInitial }}</div>
-          <button class="logout-button" type="button" @click="$emit('logout')">
-            <span aria-hidden="true">↪</span>
-            <span>退出</span>
-          </button>
-        </div>
-      </header>
-
-      <main class="dashboard-content">
+  <main class="dashboard-content">
         <div class="dashboard-layout">
           <div class="dashboard-main-column">
             <section class="welcome-banner dashboard-panel">
@@ -235,9 +180,7 @@
             <CalendarPanel />
           </aside>
         </div>
-      </main>
-    </section>
-  </div>
+  </main>
 </template>
 
 <script>
@@ -250,18 +193,9 @@ export default {
   components: {
     CalendarPanel
   },
-  emits: ['logout'],
-  props: {
-    user: {
-      type: Object,
-      default: () => ({})
-    }
-  },
   data () {
     return {
       dashboardData,
-      selectedNavigation: 0,
-      searchText: '',
       selectedTaskTab: 'all',
       tasks: [],
       isLoadingTasks: true,
@@ -271,12 +205,6 @@ export default {
     }
   },
   computed: {
-    userName () {
-      return this.user.nickname || this.user.username || 'Rui'
-    },
-    userInitial () {
-      return this.userName.slice(0, 1).toUpperCase()
-    },
     completedTasks () {
       return this.tasks.filter(task => task.status === 2)
     },
@@ -312,8 +240,8 @@ export default {
       this.taskActionError = ''
 
       try {
-        const dayTasks = await fetchDayTaskList()
-        this.tasks = dayTasks.map(task => this.mapDayTask(task))
+        const dayTaskPage = await fetchDayTaskList({ pageSize: 10, pageNum: 2 })
+        this.tasks = dayTaskPage.records.map(task => this.mapDayTask(task))
       } catch (error) {
         this.tasks = []
         this.taskError = error.message || '每日任务查询失败，请稍后重试'
@@ -404,9 +332,6 @@ export default {
       })
 
       return `${dateText} ${timeText}`
-    },
-    selectSettings () {
-      this.selectedNavigation = this.dashboardData.navigation.length
     }
   }
 }
