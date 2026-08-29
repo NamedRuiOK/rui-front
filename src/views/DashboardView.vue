@@ -240,7 +240,7 @@ export default {
       this.taskActionError = ''
 
       try {
-        const dayTaskPage = await fetchDayTaskList({ pageSize: 10, pageNum: 2 })
+        const dayTaskPage = await fetchDayTaskList({ pageSize: 100, pageNum: 1 })
         this.tasks = dayTaskPage.records.map(task => this.mapDayTask(task))
       } catch (error) {
         this.tasks = []
