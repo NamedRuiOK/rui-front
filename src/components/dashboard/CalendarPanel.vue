@@ -130,13 +130,15 @@ export default {
 }
 
 .calendar-panel {
+  display: flex;
+  flex-direction: column;
   min-height: 304px;
   padding: 17px 15px 13px;
 }
 
 .panel-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 14px;
   min-height: 29px;
@@ -168,7 +170,7 @@ export default {
   grid-template-columns: 25px 1fr 25px;
   align-items: center;
   gap: 8px;
-  margin: 12px 0 9px;
+  margin: 12px 0 10px;
 }
 
 .calendar-nav {
@@ -198,8 +200,10 @@ export default {
 
 .calendar-grid {
   display: grid;
+  flex: 1;
   grid-template-columns: repeat(7, 1fr);
-  row-gap: 6px;
+  align-content: space-between;
+  row-gap: 4px;
   border-top: 1px solid rgba(117, 149, 178, 0.12);
   padding-top: 8px;
   text-align: center;

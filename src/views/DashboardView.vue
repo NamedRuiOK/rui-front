@@ -631,14 +631,18 @@ export default {
 }
 
 .dashboard-panel {
+  min-width: 0;
   border: 1px solid rgba(107, 143, 177, 0.1);
   border-radius: 7px;
   background: #0e1c2c;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
 .welcome-banner {
   grid-area: welcome;
+  display: flex;
+  align-items: stretch;
   position: relative;
   min-height: 164px;
   overflow: hidden;
@@ -651,9 +655,13 @@ export default {
 }
 
 .welcome-copy {
+  display: flex;
+  width: min(100%, 620px);
+  flex-direction: column;
+  justify-content: space-between;
   position: relative;
   z-index: 1;
-  padding: 22px 26px;
+  padding: 22px 26px 20px;
 }
 
 .panel-kicker {
@@ -680,7 +688,9 @@ export default {
 
 .welcome-metrics {
   display: flex;
+  align-items: stretch;
   gap: 37px;
+  margin-top: auto;
 }
 
 .welcome-metric {
@@ -724,12 +734,13 @@ export default {
 .progress-panel,
 .list-panel,
 .shortcut-panel {
+  min-width: 0;
   padding: 17px 15px 13px;
 }
 
 .panel-heading {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 14px;
   min-height: 29px;
@@ -756,8 +767,19 @@ export default {
 
 .panel-tabs {
   display: flex;
+  align-items: center;
   gap: 17px;
-  margin-top: 14px;
+  margin-top: 12px;
+}
+
+.task-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.task-panel > .panel-heading {
+  align-items: flex-start;
 }
 
 .panel-tab {
@@ -775,6 +797,8 @@ export default {
 }
 
 .task-list {
+  flex: 1;
+  min-height: 0;
   max-height: 278px;
   margin-top: 10px;
   padding-right: 12px;
@@ -825,6 +849,7 @@ export default {
   align-items: center;
   gap: 10px;
   min-height: 37px;
+  padding: 0 2px;
   border-top: 1px solid rgba(117, 149, 178, 0.1);
   color: #c5d4e2;
   cursor: pointer;
@@ -866,6 +891,7 @@ export default {
 .task-title {
   overflow: hidden;
   min-width: 0;
+  line-height: 1.35;
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -890,17 +916,23 @@ export default {
   font-size: 9px;
   text-align: right;
   white-space: nowrap;
+  justify-self: end;
 }
 
 .personal-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
   min-height: 166px;
 }
 
 .personal-stats {
   display: grid;
+  flex: 1;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px 12px;
-  margin-top: 18px;
+  align-content: center;
+  margin-top: 12px;
 }
 
 .personal-stat {
@@ -943,14 +975,19 @@ export default {
 }
 
 .progress-panel {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
   min-height: 170px;
 }
 
 .progress-content {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: 17px;
-  margin-top: 12px;
+  min-height: 0;
+  margin-top: 10px;
 }
 
 .progress-ring {
@@ -1002,6 +1039,7 @@ export default {
 
 .course-row > div:first-child {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 5px;
   color: #bfd0df;
@@ -1014,8 +1052,8 @@ export default {
 }
 
 .course-track {
-  height: 4px;
-  margin-top: 4px;
+  height: 5px;
+  margin-top: 5px;
   overflow: hidden;
   border-radius: 2px;
   background: #20364d;
@@ -1035,13 +1073,17 @@ export default {
 }
 
 .list-panel {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
 }
 
 .note-list,
 .project-list,
 .activity-list {
-  margin-top: 10px;
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
 }
 
 .note-row,
@@ -1049,8 +1091,9 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 32px;
-  padding: 0;
+  min-height: 42px;
+  gap: 8px;
+  padding: 0 2px;
   border-top: 1px solid rgba(117, 149, 178, 0.1);
   background: transparent;
   color: #bfd0df;
@@ -1058,6 +1101,9 @@ export default {
 }
 
 .list-icon {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
   width: 19px;
   height: 19px;
   margin-right: 10px;
@@ -1080,6 +1126,7 @@ export default {
 
 .note-row time,
 .activity-row time {
+  flex: 0 0 auto;
   color: #738ba0;
   font-size: 8px;
 }
@@ -1097,6 +1144,11 @@ export default {
   display: grid;
   flex: 1;
   gap: 2px;
+  min-width: 0;
+}
+
+.status-tag {
+  flex: 0 0 auto;
 }
 
 .project-copy strong {
@@ -1124,7 +1176,7 @@ export default {
   grid-template-columns: 8px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
-  min-height: 32px;
+  min-height: 42px;
   border-top: 1px solid rgba(117, 149, 178, 0.1);
   color: #b8cbdc;
   font-size: 13px;
@@ -1152,12 +1204,15 @@ export default {
 .shortcut-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  align-content: space-around;
+  min-height: 0;
   gap: 8px;
   margin-top: 8px;
 }
 
 .shortcut-item {
   display: grid;
+  align-content: center;
   justify-items: center;
   gap: 4px;
   min-width: 0;
@@ -1190,8 +1245,10 @@ export default {
 
 .current-time-panel {
   display: grid;
+  align-content: center;
   min-height: 0;
   place-content: center;
+  gap: 8px;
   padding: 18px 12px;
   text-align: center;
 }
@@ -1213,7 +1270,7 @@ export default {
 }
 
 .current-clock {
-  margin-top: 10px;
+  margin-top: 0;
   color: #f0f7ff;
   font-size: 26px;
   font-variant-numeric: tabular-nums;
