@@ -896,7 +896,7 @@ textarea::placeholder { color: #69829a; }
 .task-table th,
 .task-table td { padding: 0 9px; border-bottom: 1px solid rgba(117, 149, 178, 0.09); text-align: left; }
 .task-table th { height: 42px; background: #11263b; color: #a4b9ca; font-size: 12px; font-weight: 600; }
-.task-table td { height: 56px; color: #aebfd0; font-size: 12px; }
+.task-table td { height: 56px; color: #aebfd0; font-size: 13px; }
 .task-table tbody tr:hover { background: rgba(45, 93, 139, 0.12); }
 .task-table tbody tr:last-child td { border-bottom: 0; }
 .task-table th:nth-child(2) { width: 25%; }
@@ -913,7 +913,7 @@ textarea::placeholder { color: #69829a; }
 .task-title-cell strong,
 .task-title-cell small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .task-title-cell strong { color: #d9e7f3; font-size: 13px; font-weight: 600; }
-.task-title-cell small { margin-top: 5px; color: #718aa0; font-size: 11px; }
+.task-title-cell small { margin-top: 5px; color: #718aa0; font-size: 13px; }
 
 .priority-badge,
 .status-badge,
@@ -936,7 +936,7 @@ textarea::placeholder { color: #69829a; }
 .row-action-danger:hover { color: #ff7180; }
 
 .empty-cell { height: 180px !important; color: #788fa4 !important; text-align: center !important; }
-.table-feedback { padding: 64px 20px; color: #8096aa; font-size: 14px; text-align: center; }
+.table-feedback { padding: 64px 20px; color: #8096aa; font-size: 13px; text-align: center; }
 .table-feedback p { margin: 0 0 10px; }
 .table-feedback-error { color: #ff7885; }
 .retry-button { background: #1d6fda; color: #ffffff; }
@@ -975,11 +975,11 @@ textarea::placeholder { color: #69829a; }
 .form-field textarea { width: 100%; min-height: 30px; padding: 0 9px; border: 1px solid rgba(117, 149, 178, 0.16); border-radius: 3px; background: #0a1a2a; color: #d8e5f0; }
 .form-field textarea { padding-top: 8px; resize: vertical; }
 .form-field input[type="datetime-local"] { color-scheme: dark; }
-.form-error { grid-column: 1 / -1; margin: -3px 0 0; color: #ff7885; font-size: 12px; }
+.form-error { grid-column: 1 / -1; margin: -3px 0 0; color: #ff7885; font-size: 13px; }
 .dialog-actions { grid-column: 1 / -1; justify-content: flex-end; gap: 8px; margin-top: 4px; }
 .confirm-dialog { width: min(100%, 430px); }
 .confirm-dialog-content { padding: 17px; }
-.confirm-dialog-message { margin: 0; color: #c8d8e5; font-size: 14px; line-height: 1.7; }
+.confirm-dialog-message { margin: 0; color: #c8d8e5; font-size: 13px; line-height: 1.7; }
 .delete-confirm-button { min-width: 82px; border: 1px solid #c34e5d; background: #b94352; color: #ffffff; }
 .delete-confirm-button:disabled { cursor: not-allowed; opacity: 0.55; }
 .submit-button { min-width: 62px; border: 1px solid #1e74df; background: #1d70db; color: #ffffff; }

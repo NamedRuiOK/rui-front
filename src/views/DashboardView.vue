@@ -629,7 +629,7 @@ export default {
 .welcome-copy > p:not(.panel-kicker) {
   margin: 6px 0 20px;
   color: #b7d1e8;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .welcome-metrics {
@@ -738,7 +738,7 @@ export default {
   margin-top: 14px;
   padding: 20px 8px 16px;
   color: #8197aa;
-  font-size: 11px;
+  font-size: 13px;
   text-align: center;
 }
 
@@ -753,7 +753,7 @@ export default {
 .task-action-error {
   margin: 10px 0 0;
   color: #ff7280;
-  font-size: 10px;
+  font-size: 13px;
 }
 
 .task-row {
@@ -802,7 +802,7 @@ export default {
 
 .task-title {
   overflow: hidden;
-  font-size: 11px;
+  font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -941,7 +941,7 @@ export default {
   justify-content: space-between;
   gap: 5px;
   color: #bfd0df;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .course-row small {
@@ -1010,11 +1010,10 @@ export default {
 
 .note-title {
   flex: 1;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .note-row time,
-.project-copy small,
 .activity-row time {
   color: #738ba0;
   font-size: 8px;
@@ -1038,7 +1037,7 @@ export default {
 .project-copy strong {
   overflow: hidden;
   color: #d5e1ec;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1046,6 +1045,8 @@ export default {
 
 .project-copy small {
   overflow: hidden;
+  color: #738ba0;
+  font-size: 13px;
   text-overflow: ellipsis;
 }
 
@@ -1061,7 +1062,7 @@ export default {
   min-height: 32px;
   border-top: 1px solid rgba(117, 149, 178, 0.1);
   color: #b8cbdc;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .activity-row span:not(.activity-dot) {

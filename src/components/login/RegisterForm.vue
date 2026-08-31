@@ -230,7 +230,7 @@ export default {
 
 .feedback {
   margin: 14px 0 -2px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 

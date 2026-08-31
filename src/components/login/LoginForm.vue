@@ -185,7 +185,7 @@ export default {
 
 .feedback {
   margin: 4px 0 -6px;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
 }
 
@@ -220,7 +220,7 @@ export default {
 .success-state p {
   margin: 9px 0 25px;
   color: #748390;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .secondary-button {

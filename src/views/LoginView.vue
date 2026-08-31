@@ -180,7 +180,7 @@ export default {
 .login-heading > p:last-child {
   margin: 10px 0 32px;
   color: #748390;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
 }
 
@@ -210,7 +210,7 @@ export default {
 .register-success {
   margin: 14px 0 -4px;
   color: #2f8960;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   text-align: center;
 }
