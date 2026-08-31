@@ -66,7 +66,7 @@
                       @change="completeTask(task, $event)"
                     >
                     <span class="task-check" aria-hidden="true">{{ task.state === 'done' ? '✓' : '' }}</span>
-                    <span class="task-title">{{ task.title }}</span>
+                    <span class="task-title" :title="task.title">{{ task.title }}</span>
                     <span class="task-tag" :class="`tone-${task.tone}`">{{ task.tag }}</span>
                     <time class="task-time">{{ task.time }}</time>
                   </label>
@@ -177,7 +177,19 @@
               </div>
             </section>
 
-            <CalendarPanel />
+            <div class="dashboard-schedule">
+              <section class="dashboard-panel current-time-panel" aria-label="当前时间">
+                <div class="current-date-line">
+                  <span>{{ currentDateText }}</span>
+                  <span class="current-weekday">{{ currentWeekdayText }}</span>
+                </div>
+                <time class="current-clock" :datetime="currentTime.toISOString()">
+                  {{ currentTimeText }}
+                </time>
+              </section>
+
+              <CalendarPanel class="dashboard-calendar-panel" />
+            </div>
           </aside>
         </div>
   </main>
@@ -201,7 +213,9 @@ export default {
       isLoadingTasks: true,
       taskError: '',
       taskActionError: '',
-      completingTaskIds: []
+      completingTaskIds: [],
+      currentTime: new Date(),
+      clockTimer: null
     }
   },
   computed: {
@@ -228,12 +242,35 @@ export default {
       }
 
       return this.tasks
+    },
+    currentDateText () {
+      return `${this.currentTime.getFullYear()}年${this.padTimePart(this.currentTime.getMonth() + 1)}月${this.padTimePart(this.currentTime.getDate())}日`
+    },
+    currentWeekdayText () {
+      return `星期${['日', '一', '二', '三', '四', '五', '六'][this.currentTime.getDay()]}`
+    },
+    currentTimeText () {
+      const hours = this.padTimePart(this.currentTime.getHours())
+      const minutes = this.padTimePart(this.currentTime.getMinutes())
+      const seconds = this.padTimePart(this.currentTime.getSeconds())
+      const milliseconds = String(this.currentTime.getMilliseconds()).padStart(3, '0')
+
+      return `${hours}:${minutes}:${seconds}.${milliseconds}`
     }
   },
   mounted () {
     this.loadDayTasks()
+    this.clockTimer = window.setInterval(() => {
+      this.currentTime = new Date()
+    }, 16)
+  },
+  beforeUnmount () {
+    window.clearInterval(this.clockTimer)
   },
   methods: {
+    padTimePart (value) {
+      return String(value).padStart(2, '0')
+    },
     async loadDayTasks () {
       this.isLoadingTasks = true
       this.taskError = ''
@@ -570,19 +607,27 @@ export default {
 
 .dashboard-layout {
   display: grid;
+  grid-template-areas:
+    "welcome shortcuts"
+    "overview schedule"
+    "lists lists";
   grid-template-columns: minmax(0, 1fr) 330px;
   gap: 17px;
   max-width: 1480px;
   margin: 0 auto;
 }
 
-.dashboard-main-column,
-.dashboard-right-column,
 .dashboard-side-column {
   display: grid;
-  align-content: start;
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  align-content: stretch;
   gap: 15px;
   min-width: 0;
+}
+
+.dashboard-main-column,
+.dashboard-right-column {
+  display: contents;
 }
 
 .dashboard-panel {
@@ -593,6 +638,7 @@ export default {
 }
 
 .welcome-banner {
+  grid-area: welcome;
   position: relative;
   min-height: 164px;
   overflow: hidden;
@@ -668,6 +714,7 @@ export default {
 
 .dashboard-two-column {
   display: grid;
+  grid-area: overview;
   grid-template-columns: minmax(0, 1.45fr) minmax(290px, 0.9fr);
   gap: 15px;
 }
@@ -730,8 +777,24 @@ export default {
 .task-list {
   max-height: 278px;
   margin-top: 10px;
+  padding-right: 12px;
+  overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.task-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+  border-radius: 3px;
+  background: rgba(125, 150, 174, 0.45);
+}
+
+.task-list::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .task-feedback {
@@ -802,6 +865,7 @@ export default {
 
 .task-title {
   overflow: hidden;
+  min-width: 0;
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -965,7 +1029,8 @@ export default {
 
 .dashboard-three-column {
   display: grid;
-  grid-template-columns: 0.95fr 1.2fr 1.05fr;
+  grid-area: lists;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 15px;
 }
 
@@ -1078,25 +1143,28 @@ export default {
 }
 
 .shortcut-panel {
-  min-height: 194px;
+  grid-area: shortcuts;
+  align-self: stretch;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .shortcut-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px 8px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .shortcut-item {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
   padding: 0;
   background: transparent;
   color: #c4d3e1;
-  font-size: 9px;
+  font-size: 13px;
 }
 
 .shortcut-item:hover {
@@ -1104,11 +1172,56 @@ export default {
 }
 
 .shortcut-icon {
-  width: 31px;
-  height: 31px;
+  width: 27px;
+  height: 27px;
   border-radius: 8px;
   font-size: 15px;
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.12);
+}
+
+.dashboard-schedule {
+  display: grid;
+  grid-area: schedule;
+  grid-template-rows: minmax(0, 1fr) 304px;
+  gap: 15px;
+  min-height: 0;
+  align-self: stretch;
+}
+
+.current-time-panel {
+  display: grid;
+  min-height: 0;
+  place-content: center;
+  padding: 18px 12px;
+  text-align: center;
+}
+
+.current-date-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  color: #d6e5f2;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.current-weekday {
+  color: #7f9ab1;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.current-clock {
+  margin-top: 10px;
+  color: #f0f7ff;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.dashboard-calendar-panel {
+  height: 304px;
 }
 
 .tone-blue {
@@ -1201,13 +1314,18 @@ export default {
 
 @media (max-width: 1100px) {
   .dashboard-layout {
+    grid-template-areas:
+      "welcome"
+      "shortcuts"
+      "overview"
+      "schedule"
+      "lists";
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .dashboard-right-column {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  .dashboard-schedule {
+    grid-template-rows: auto auto;
   }
-
 }
 
 @media (max-width: 780px) {
@@ -1240,9 +1358,10 @@ export default {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .dashboard-right-column {
-    grid-template-columns: minmax(0, 1fr);
+  .dashboard-side-column {
+    grid-template-rows: auto auto;
   }
+
 }
 
 @media (max-width: 560px) {
